@@ -41,6 +41,16 @@ server:
 api:
   url:
     payment: http://localhost:8084
+
+feign:
+  hystrix:
+    enabled: true
+
+hystrix:
+  command:
+    # 전역설정
+    default:
+      execution.isolation.thread.timeoutInMilliseconds: 610
 ---
 
 spring:
@@ -66,3 +76,6 @@ spring:
         event-out:
           destination: bookrental
           contentType: application/json
+api:
+  url:
+    payment: http://teamb-payment:8080
