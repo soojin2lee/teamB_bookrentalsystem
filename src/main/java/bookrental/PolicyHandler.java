@@ -14,10 +14,10 @@ import java.util.Optional;
 public class PolicyHandler{
 
     @Autowired
-    BookRentalSystemRepository brs;
+    BookRentalSystemRepository bookRentalRepo;
 
     @Autowired
-    BookListStatusRepository bls;
+    BookListStatusRepository bookStatusRepo;
 
     @StreamListener(KafkaProcessor.INPUT)
     public void onStringEventListener(@Payload String eventString){
@@ -36,27 +36,40 @@ public class PolicyHandler{
             bookStatus.setId(bookRegistered.getId());
             bookStatus.setRentalStatus("IDLE");
 
-            bls.save(bookStatus);
+            bookStatusRepo.save(bookStatus);
         }
     }
+
     @StreamListener(KafkaProcessor.INPUT)
     public void wheneverPaid_ChangeBookStatus(@Payload Paid paid){
 
         if(paid.isMe()){
             System.out.println("##### listener ChangeBookStatus : " + paid.toJson());
 
-            Optional<BookRentalSystem> bookRentalSystemOptional = brs.findById(paid.getRentalId());
+            Optional<BookRentalSystem> bookRentalSystemOptional = bookRentalRepo.findById(paid.getRentalId());
             if( bookRentalSystemOptional.isPresent() ) {
                 BookRentalSystem bookRental = bookRentalSystemOptional.get();
+                bookRental.setRentalStatus("RENTED");
 
-                Optional<BookListStatus> bookListStatusOptional = bls.findById(bookRental.getBookId());
+                System.out.println("RENTED. book Id : " + bookRental.getBookId());
+
+                bookRentalRepo.save(bookRental);
+
+
+                Optional<BookListStatus> bookListStatusOptional = bookStatusRepo.findById(bookRental.getBookId());
                 if( bookListStatusOptional.isPresent() ){
                     BookListStatus bookStatus = bookListStatusOptional.get();
 
                     bookStatus.setRentalStatus("RENTED");
 
-                    bls.save(bookStatus);
+                    bookStatusRepo.save(bookStatus);
                 }
+                else {
+                    System.out.println("wheneverPaid_ChangeBookStatus, book Id : " + bookRental.getBookId());
+                }
+            }
+            else {
+                System.out.println("RENTED. rental Id : " + paid.getRentalId());
             }
         }
     }
@@ -66,17 +79,17 @@ public class PolicyHandler{
         if(refunded.isMe()){
             System.out.println("##### listener ChangeBookStatus : " + refunded.toJson());
 
-            Optional<BookRentalSystem> bookRentalSystemOptional = brs.findById(refunded.getRentalId());
+            Optional<BookRentalSystem> bookRentalSystemOptional = bookRentalRepo.findById(refunded.getRentalId());
             if( bookRentalSystemOptional.isPresent() ) {
                 BookRentalSystem bookRental = bookRentalSystemOptional.get();
 
-                Optional<BookListStatus> bookListStatusOptional = bls.findById(bookRental.getBookId());
+                Optional<BookListStatus> bookListStatusOptional = bookStatusRepo.findById(bookRental.getBookId());
                 if( bookListStatusOptional.isPresent() ){
                     BookListStatus bookStatus = bookListStatusOptional.get();
 
                     bookStatus.setRentalStatus("IDLE");
 
-                    bls.save(bookStatus);
+                    bookStatusRepo.save(bookStatus);
                 }
             }
         }

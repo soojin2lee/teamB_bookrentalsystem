@@ -31,11 +31,33 @@ public class BookRentalSystem {
     @PostPersist
     public void onPostPersist(){
 
+        System.out.println("##### onPostPersist!! Id: " + this.getId());
+
+        if("REQ_PAY".equals(this.getRentalStatus() ) ) {
+
+            bookrental.external.Payment payment = new bookrental.external.Payment();
+            // mappings goes here
+            payment.setRentalId(this.getId()) ;
+            payment.setBookId(this.getBookId());
+            payment.setRate(this.getRentalFee());
+            payment.setRegDate(this.getRentalDate());
+            payment.setPayStatus(this.getRentalStatus());
+            BookrentalsystemApplication.applicationContext.getBean(bookrental.external.PaymentService.class)
+                    .pay(payment);
+
+            Rented rented = new Rented();
+            BeanUtils.copyProperties(this, rented);
+            rented.publishAfterCommit();
+        }
+        else {
+            System.out.println("onPostPersist(), rentalStatus is " + this.getRentalStatus());
+        }
+/*
         if ("RENTED".equals(this.getRentalStatus() ) ) {
             Rented rented = new Rented();
             BeanUtils.copyProperties(this, rented);
             rented.publishAfterCommit();
-        } else if("RETRUNED".equals(this.getRentalStatus() ) ) {
+        } else if("RETURNED".equals(this.getRentalStatus() ) ) {
             Returned returned = new Returned();
             BeanUtils.copyProperties(this, returned);
             returned.publishAfterCommit();
@@ -44,18 +66,37 @@ public class BookRentalSystem {
             BeanUtils.copyProperties(this, cancelled);
             cancelled.publishAfterCommit();
         }
-
+*/
     }
 
+    @PostUpdate
+    public void onPostUpdate() {
+        if("RETURNED".equals(this.getRentalStatus() ) ) {
+            Returned returned = new Returned();
+            BeanUtils.copyProperties(this, returned);
+            returned.publishAfterCommit();
+        } else if("CANCELLED".equals(this.getRentalStatus() ) ) {
+            Cancelled cancelled = new Cancelled();
+            BeanUtils.copyProperties(this, cancelled);
+            cancelled.publishAfterCommit();
+        }
+        else {
+            System.out.println("onPostUpdate(), rentalStatus is " + this.getRentalStatus());
+        }
+
+    }
+/*
     @PrePersist
     public void onPrePersist(){
-    /*
+
         Rented rented = new Rented();
         BeanUtils.copyProperties(this, rented);
         rented.publishAfterCommit();
-*/
+
         //Following code causes dependency to external APIs
         // it is NOT A GOOD PRACTICE. instead, Event-Policy mapping is recommended.
+
+        System.out.println("##### onPrePersist!! Id: " + this.getId());
 
         bookrental.external.Payment payment = new bookrental.external.Payment();
         // mappings goes here
@@ -69,7 +110,7 @@ public class BookRentalSystem {
 
 
     }
-
+*/
     @PreRemove
     public void onPreRemove(){
         Cancelled cancelled = new Cancelled();

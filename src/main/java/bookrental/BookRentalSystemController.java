@@ -21,6 +21,8 @@ import java.util.Optional;
  @PostMapping("/rent")
  public BookRentalSystem rented(@RequestBody BookRentalSystem postBookRental) {
 
+  System.out.println("##### rented!! Id: " + postBookRental.getBookId());
+
   Optional<BookListStatus> bookListStatusSystemOptional = bls.findById(postBookRental.getBookId());
   if (bookListStatusSystemOptional.isPresent()) {
    BookListStatus bookListStatus = bookListStatusSystemOptional.get();
@@ -29,10 +31,11 @@ import java.util.Optional;
     BookRentalSystem bookRentalSystem = new BookRentalSystem();
     bookRentalSystem.setBookId(postBookRental.getBookId());
     bookRentalSystem.setUserId(postBookRental.getUserId());
-    bookRentalSystem.setRentalFee(postBookRental.getRentalFee());
+    bookRentalSystem.setRentalFee(bookListStatus.getRentalFee());
     bookRentalSystem.setRentalDate(new Date());
-    bookRentalSystem.setRentalStatus("RENTED");
+    bookRentalSystem.setRentalStatus("REQ_PAY");
     brs.save(bookRentalSystem);
+    System.out.println("##### rented!! End!! Id: " + bookRentalSystem.getId());
     return bookRentalSystem;
    } else {
     System.out.println("book state is RENT!! : " + postBookRental.getBookId());
@@ -80,6 +83,13 @@ import java.util.Optional;
    bookRental.setReturnDate(new Date());
    bookRental.setRentalStatus("CANCELLED");
    brs.save(bookRental);
+
+   Optional<BookListStatus> bookListStatusSystemOptional = bls.findById(bookRental.getBookId());
+   if (bookListStatusSystemOptional.isPresent()) {
+    BookListStatus bookListStatus = bookListStatusSystemOptional.get();
+    bookListStatus.setRentalStatus("IDLE");
+    bls.save(bookListStatus);
+   }
    return bookRental;
   }
   System.out.println("cant not find rental ID!! : " + postBookRental.getId());
