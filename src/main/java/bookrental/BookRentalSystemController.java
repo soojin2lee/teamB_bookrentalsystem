@@ -9,7 +9,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
-@RestController("/rentalapi")
+@RestController()
  public class BookRentalSystemController {
 
  @Autowired
@@ -18,7 +18,7 @@ import java.util.Optional;
  @Autowired
  BookListStatusRepository bls;
 
- @PostMapping("/rent")
+ @PostMapping("/bookRentalSystems/rent")
  public BookRentalSystem rented(@RequestBody BookRentalSystem postBookRental) {
 
   System.out.println("##### rented!! Id: " + postBookRental.getBookId());
@@ -46,7 +46,7 @@ import java.util.Optional;
   return null;
  }
 
- @PostMapping("/return")
+ @PostMapping("/bookRentalSystems/return")
  public BookRentalSystem returned(@RequestBody BookRentalSystem postBookRental) {
 
   Optional<BookRentalSystem> bookRentalSystemOptional = brs.findById(postBookRental.getId());
@@ -73,7 +73,7 @@ import java.util.Optional;
   return null;
  }
 
- @PostMapping("/cancel")
+ @PostMapping("/bookRentalSystems/cancel")
  public BookRentalSystem cancelled(@RequestBody BookRentalSystem postBookRental) {
 
   Optional<BookRentalSystem> bookRentalSystemOptional = brs.findById(postBookRental.getId());
