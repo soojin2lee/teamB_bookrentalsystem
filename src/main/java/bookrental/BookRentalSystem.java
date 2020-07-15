@@ -71,11 +71,53 @@ public class BookRentalSystem {
 
     @PostUpdate
     public void onPostUpdate() {
+        System.out.println("##### onPostUpdate!! Id: " + this.getId());
+
         if("RETURNED".equals(this.getRentalStatus() ) ) {
             Returned returned = new Returned();
             BeanUtils.copyProperties(this, returned);
             returned.publishAfterCommit();
         } else if("CANCELLED".equals(this.getRentalStatus() ) ) {
+ /*
+            RestTemplate restTemplate = BookrentalsystemApplication.applicationContext.getBean(RestTemplate.class);
+            String productUrl = "http://localhost:8084/payments/search/findByRentalIdAndBookId?rentalId=" + this.getId() + "&bookId=" + this.getBookId() ;
+
+            System.out.println("onPreRemove(), productUrl is " + productUrl );
+
+            ResponseEntity<String> paymentEntity = restTemplate.getForEntity( productUrl, String.class);
+
+            JsonParser parser = new JsonParser();
+            JsonObject jsonObject = parser.parse(paymentEntity.getBody()).getAsJsonObject();
+
+            Long id ;
+            id = jsonObject.get("id").getAsLong();
+
+            System.out.println("onPreRemove(), id is " + id );
+
+            bookrental.external.Payment payment = new bookrental.external.Payment();
+            // mappings goes here
+            payment.setId(id);
+            payment.setRentalId(this.getId()) ;
+            payment.setBookId(this.getBookId());
+            payment.setRate(this.getRentalFee());
+            payment.setRegDate(this.getRentalDate());
+            payment.setPayStatus("CANCELLED");
+            BookrentalsystemApplication.applicationContext.getBean(bookrental.external.PaymentService.class)
+                    .refund(id, payment);
+
+  */
+
+            bookrental.external.Payment payment = new bookrental.external.Payment();
+            // mappings goes here
+            payment.setId(this.getId());
+            payment.setRentalId(this.getId()) ;
+            payment.setBookId(this.getBookId());
+            payment.setRate(this.getRentalFee());
+            payment.setRegDate(this.getRentalDate());
+            payment.setPayStatus("CANCELLED");
+            BookrentalsystemApplication.applicationContext.getBean(bookrental.external.PaymentService.class)
+                    .refund(payment.getRentalId(), payment);
+
             Cancelled cancelled = new Cancelled();
             BeanUtils.copyProperties(this, cancelled);
             cancelled.publishAfterCommit();
@@ -113,6 +155,7 @@ public class BookRentalSystem {
 */
     @PreRemove
     public void onPreRemove(){
+        System.out.println("onPreRemove()");
         Cancelled cancelled = new Cancelled();
         BeanUtils.copyProperties(this, cancelled);
         cancelled.publishAfterCommit();
@@ -123,6 +166,8 @@ public class BookRentalSystem {
         RestTemplate restTemplate = BookrentalsystemApplication.applicationContext.getBean(RestTemplate.class);
         String productUrl = "localhost:8084/payments/search/findByRentalIdAndBookId rentalId==" + this.getId() + " bookId==" + this.getBookId() ;
 
+        System.out.println("onPreRemove(), productUrl is " + productUrl );
+
         ResponseEntity<String> paymentEntity = restTemplate.getForEntity( productUrl, String.class);
 
         JsonParser parser = new JsonParser();
@@ -130,6 +175,8 @@ public class BookRentalSystem {
 
         Long id ;
         id = jsonObject.get("id").getAsLong();
+
+        System.out.println("onPreRemove(), id is " + id );
 
         bookrental.external.Payment payment = new bookrental.external.Payment();
         // mappings goes here
@@ -140,7 +187,7 @@ public class BookRentalSystem {
         payment.setRegDate(this.getRentalDate());
         payment.setPayStatus("CANCELLED");
         BookrentalsystemApplication.applicationContext.getBean(bookrental.external.PaymentService.class)
-            .refund(payment);
+            .refund(payment.getRentalId(), payment);
 
 
     }
