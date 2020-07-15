@@ -9,7 +9,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
-@RestController
+@RestController("/rentalapi")
  public class BookRentalSystemController {
 
  @Autowired
