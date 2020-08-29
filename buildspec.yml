@@ -2,7 +2,7 @@ version: 0.2
 
 env:
   variables:
-    _PROJECT_NAME: "teamB_bookrentalsystem"
+    _PROJECT_NAME: "bookrentalsystem"
 
 phases:
   install:
