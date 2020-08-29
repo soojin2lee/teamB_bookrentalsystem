@@ -2,7 +2,7 @@ version: 0.2
 
 env:
   variables:
-    _PROJECT_NAME: "soojin2-bookrentalsystem"
+    _PROJECT_NAME: "teamB_bookrentalsystem"
 
 phases:
   install:
